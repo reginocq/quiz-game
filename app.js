@@ -1,3 +1,5 @@
+const SESSION_TIMEOUT = 120; //En segundos
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -39,6 +41,20 @@ app.use(function(req, res, next) {
   // Hacer visible req.session en las vistas
   res.locals.session = req.session;
   next();
+});
+
+// Logout tras un tiempo configurable
+app.use(function (req, res, next) {
+	if (req.session.user) {
+		if (req.session.fechaAcceso) {
+		    //now() trabaja con milisegundos y el timeout de sesión está en segundos
+    		if (((Date.now() - req.session.fechaAcceso) / 1000) > SESSION_TIMEOUT) {
+    			delete req.session.user;
+    			delete req.session.fechaAcceso;
+    		}
+		}
+	}
+	next();
 });
 
 app.use('/', routes);
